@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MyCard 整理工具</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --primary: #2563eb;
+      --primary-2: #1d4ed8;
+      --ok: #047857;
+      --warn: #b45309;
+      --danger: #b91c1c;
+      --shadow: 0 10px 30px rgba(0,0,0,0.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background: linear-gradient(180deg, #f8faff 0%, #f6f7fb 100%);
+      color: var(--text);
+    }
+
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 20px 14px 40px;
+    }
+
+    .hero {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.8);
+      box-shadow: var(--shadow);
+      border-radius: 24px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 1.45rem;
+      line-height: 1.2;
+    }
+
+    .sub {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.55;
+    }
+
+    .panel {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .label {
+      display: block;
+      font-size: 0.92rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 180px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      font-size: 16px;
+      line-height: 1.55;
+      outline: none;
+      background: #fff;
+    }
+
+    textarea:focus, select:focus, input:focus {
+      border-color: #93c5fd;
+      box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    button {
+      border: none;
+      border-radius: 14px;
+      padding: 13px 14px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .04s ease, opacity .2s ease, background .2s ease;
+    }
+
+    button:active { transform: scale(.99); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-2); }
+    .btn-secondary { background: #eef2ff; color: #3730a3; }
+    .btn-soft { background: #f3f4f6; color: #111827; }
+    .btn-danger { background: #fef2f2; color: var(--danger); }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .field {
+      min-width: 180px;
+      flex: 1;
+    }
+
+    select, input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 11px 12px;
+      font-size: 15px;
+      background: #fff;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    .status {
+      margin-top: 10px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      min-height: 1.4em;
+    }
+
+    .status.ok { color: var(--ok); }
+    .status.warn { color: var(--warn); }
+
+    .summary {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .summary strong {
+      font-size: 1rem;
+    }
+
+    .list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .item {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+      background: #fff;
+    }
+
+    .item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .item-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+    }
+
+    .kv {
+      display: grid;
+      gap: 7px;
+      margin-bottom: 10px;
+    }
+
+    .pill {
+      display: inline-block;
+      background: #f9fafb;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .code {
+      display: block;
+      width: 100%;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      word-break: break-all;
+      font-size: 0.95rem;
+      background: #f9fafb;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 11px;
+    }
+
+    .item-actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .output {
+      width: 100%;
+      min-height: 130px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      font-size: 15px;
+      background: #fcfcfd;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 0.85rem;
+      line-height: 1.55;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 720px) {
+      .actions, .item-actions { grid-template-columns: 1fr; }
+      .wrap { padding: 14px 12px 28px; }
+      h1 { font-size: 1.28rem; }
+      .hero, .panel { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>MyCard 簡訊整理工具</h1>
+      <p class="sub">純前端工具，不會把資料送到伺服器。把 momo 簡訊整段貼進來，就能自動拆出卡號與密碼，並支援單筆複製、全部複製與不同輸出格式。</p>
+    </section>
+
+    <section class="panel">
+      <label class="label" for="rawInput">貼上簡訊內容</label>
+      <textarea id="rawInput" placeholder="例如：您於momo購買的商品卡號為:XXXXXX000000，商品密碼為ASDFGHJKLZXC，商品名稱【MyCard】90點點數卡..."></textarea>
+      <div class="actions">
+        <button class="btn-primary" id="parseBtn">解析資料</button>
+        <button class="btn-soft" id="pasteBtn">貼上剪貼簿</button>
+        <button class="btn-secondary" id="loadDemoBtn">載入範例</button>
+        <button class="btn-danger" id="clearBtn">清空</button>
+      </div>
+      <div class="status" id="status"></div>
+      <div class="hint">支援格式：<code>您於momo購買的商品卡號為:卡號，商品密碼為密碼，商品名稱【MyCard】90點點數卡</code></div>
+    </section>
+
+    <section class="panel">
+      <div class="toolbar">
+        <div class="field">
+          <label class="label" for="formatSelect">輸出格式</label>
+          <select id="formatSelect">
+            <option value="comma">卡號,密碼</option>
+            <option value="pipe">卡號|密碼</option>
+            <option value="tab">卡號[TAB]密碼</option>
+            <option value="space">卡號 空格 密碼</option>
+            <option value="card">只複製卡號</option>
+            <option value="password">只複製密碼</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="label" for="customSep">自訂分隔符（選填）</label>
+          <input id="customSep" type="text" placeholder="例如： / 或 #" />
+        </div>
+      </div>
+
+      <div class="summary">
+        <strong id="countText">共 0 筆</strong>
+        <div class="row">
+          <button class="btn-primary" id="copyAllBtn">全部複製</button>
+          <button class="btn-secondary" id="copyFirstBtn">複製第一筆</button>
+          <button class="btn-soft" id="downloadBtn">下載 TXT</button>
+        </div>
+      </div>
+
+      <label class="label" for="outputBox">全部輸出預覽</label>
+      <div class="output" id="outputBox"></div>
+      <div class="footer-note">提示：在 iPhone 可用 Safari 開啟後「分享 → 加到主畫面」；在 Android 可用 Chrome「加入主畫面」，之後就會像 App 一樣好按。</div>
+    </section>
+
+    <section class="panel">
+      <div class="summary">
+        <strong>解析結果</strong>
+        <span class="pill" id="formatHint">目前格式：卡號,密碼</span>
+      </div>
+      <div class="list" id="resultList"></div>
+    </section>
+  </div>
+
+  <script>
+    const rawInput = document.getElementById('rawInput');
+    const parseBtn = document.getElementById('parseBtn');
+    const pasteBtn = document.getElementById('pasteBtn');
+    const loadDemoBtn = document.getElementById('loadDemoBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const statusEl = document.getElementById('status');
+    const formatSelect = document.getElementById('formatSelect');
+    const customSep = document.getElementById('customSep');
+    const countText = document.getElementById('countText');
+    const outputBox = document.getElementById('outputBox');
+    const resultList = document.getElementById('resultList');
+    const copyAllBtn = document.getElementById('copyAllBtn');
+    const copyFirstBtn = document.getElementById('copyFirstBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const formatHint = document.getElementById('formatHint');
+
+    let parsedData = [];
+
+    const demoText = '您於momo購買的商品卡號為:XXXXXX000000，商品密碼為ASDFGHJKLZXC，商品名稱【MyCard】90點點數卡 您於momo購買的商品卡號為:XXXXXX000001，商品密碼為ASDFGHJKLZXC，商品名稱【MyCard】90點點數卡';
+
+    function setStatus(message, type = '') {
+      statusEl.textContent = message;
+      statusEl.className = 'status' + (type ? ' ' + type : '');
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function parseText(text) {
+      const results = [];
+      const regex = /商品卡號為:([^，\s]+)，商品密碼為([^，\s]+)，商品名稱【MyCard】90點點數卡/g;
+      let match;
+      while ((match = regex.exec(text)) !== null) {
+        results.push({ card: match[1].trim(), password: match[2].trim() });
+      }
+      return results;
+    }
+
+    function getFormattedLine(item) {
+      const custom = customSep.value;
+      const format = formatSelect.value;
+
+      if (custom) return `${item.card}${custom}${item.password}`;
+      if (format === 'comma') return `${item.card},${item.password}`;
+      if (format === 'pipe') return `${item.card}|${item.password}`;
+      if (format === 'tab') return `${item.card}\t${item.password}`;
+      if (format === 'space') return `${item.card} ${item.password}`;
+      if (format === 'card') return item.card;
+      if (format === 'password') return item.password;
+      return `${item.card},${item.password}`;
+    }
+
+    function getFormatLabel() {
+      if (customSep.value) return `目前格式：卡號${customSep.value}密碼`;
+      const labels = {
+        comma: '目前格式：卡號,密碼',
+        pipe: '目前格式：卡號|密碼',
+        tab: '目前格式：卡號[TAB]密碼',
+        space: '目前格式：卡號 空格 密碼',
+        card: '目前格式：只複製卡號',
+        password: '目前格式：只複製密碼'
+      };
+      return labels[formatSelect.value] || '目前格式：卡號,密碼';
+    }
+
+    function renderOutput() {
+      countText.textContent = `共 ${parsedData.length} 筆`;
+      formatHint.textContent = getFormatLabel();
+      outputBox.textContent = parsedData.map(getFormattedLine).join('\n');
+
+      if (!parsedData.length) {
+        resultList.innerHTML = '<div class="hint">目前沒有資料。</div>';
+        return;
+      }
+
+      resultList.innerHTML = parsedData.map((item, index) => {
+        const line = escapeHtml(getFormattedLine(item));
+        const card = escapeHtml(item.card);
+        const password = escapeHtml(item.password);
+        return `
+          <div class="item">
+            <div class="item-top">
+              <div class="item-title">第 ${index + 1} 筆</div>
+              <span class="pill">可單筆複製</span>
+            </div>
+            <div class="kv">
+              <div>
+                <div class="hint">卡號</div>
+                <div class="code">${card}</div>
+              </div>
+              <div>
+                <div class="hint">密碼</div>
+                <div class="code">${password}</div>
+              </div>
+              <div>
+                <div class="hint">目前輸出</div>
+                <div class="code">${line}</div>
+              </div>
+            </div>
+            <div class="item-actions">
+              <button class="btn-primary" onclick="copyText(${JSON.stringify('${item.card}').replace(/"\$\{item\.card\}"/, JSON.stringify(item.card))})">複製卡號</button>
+              <button class="btn-secondary" onclick="copyText(${JSON.stringify('${item.password}').replace(/"\$\{item\.password\}"/, JSON.stringify(item.password))})">複製密碼</button>
+              <button class="btn-soft" onclick="copyText(${JSON.stringify('${getFormattedLine(item)}').replace(/"\$\{getFormattedLine\(item\)\}"/, JSON.stringify(getFormattedLine(item)))})">複製本筆</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Rebuild buttons safely without inline data parsing issues
+      const items = resultList.querySelectorAll('.item');
+      items.forEach((el, index) => {
+        const [btnCard, btnPwd, btnLine] = el.querySelectorAll('button');
+        btnCard.onclick = () => copyText(parsedData[index].card);
+        btnPwd.onclick = () => copyText(parsedData[index].password);
+        btnLine.onclick = () => copyText(getFormattedLine(parsedData[index]));
+      });
+    }
+
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        setStatus('已複製到剪貼簿。', 'ok');
+      } catch (err) {
+        fallbackCopy(text);
+      }
+    }
+
+    function fallbackCopy(text) {
+      const temp = document.createElement('textarea');
+      temp.value = text;
+      document.body.appendChild(temp);
+      temp.select();
+      temp.setSelectionRange(0, temp.value.length);
+      try {
+        document.execCommand('copy');
+        setStatus('已複製到剪貼簿。', 'ok');
+      } catch (e) {
+        setStatus('無法自動複製，請手動長按輸出區塊複製。', 'warn');
+      }
+      document.body.removeChild(temp);
+    }
+
+    function runParse() {
+      const text = rawInput.value.trim();
+      if (!text) {
+        parsedData = [];
+        renderOutput();
+        setStatus('請先貼上簡訊內容。', 'warn');
+        return;
+      }
+      parsedData = parseText(text);
+      renderOutput();
+      if (parsedData.length) {
+        setStatus(`解析完成，共找到 ${parsedData.length} 筆。`, 'ok');
+      } else {
+        setStatus('沒有抓到資料，請確認簡訊格式是否一致。', 'warn');
+      }
+    }
+
+    parseBtn.addEventListener('click', runParse);
+    formatSelect.addEventListener('change', renderOutput);
+    customSep.addEventListener('input', renderOutput);
+
+    pasteBtn.addEventListener('click', async () => {
+      try {
+        const text = await navigator.clipboard.readText();
+        rawInput.value = text;
+        setStatus('已從剪貼簿貼入內容。', 'ok');
+        runParse();
+      } catch (err) {
+        setStatus('讀取剪貼簿失敗，請直接手動貼上。', 'warn');
+      }
+    });
+
+    loadDemoBtn.addEventListener('click', () => {
+      rawInput.value = demoText;
+      runParse();
+    });
+
+    clearBtn.addEventListener('click', () => {
+      rawInput.value = '';
+      parsedData = [];
+      customSep.value = '';
+      formatSelect.value = 'comma';
+      renderOutput();
+      setStatus('已清空。');
+    });
+
+    copyAllBtn.addEventListener('click', () => {
+      if (!parsedData.length) {
+        setStatus('目前沒有可複製的資料。', 'warn');
+        return;
+      }
+      copyText(parsedData.map(getFormattedLine).join('\n'));
+    });
+
+    copyFirstBtn.addEventListener('click', () => {
+      if (!parsedData.length) {
+        setStatus('目前沒有可複製的資料。', 'warn');
+        return;
+      }
+      copyText(getFormattedLine(parsedData[0]));
+    });
+
+    downloadBtn.addEventListener('click', () => {
+      if (!parsedData.length) {
+        setStatus('目前沒有可下載的資料。', 'warn');
+        return;
+      }
+      const content = parsedData.map(getFormattedLine).join('\n');
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'mycard-list.txt';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      setStatus('已下載 TXT。', 'ok');
+    });
+
+    renderOutput();
+    window.copyText = copyText;
+  </script>
+</body>
+</html>
